@@ -1159,69 +1159,9 @@ function renderAwardLeader(players, key, leaderId, countId, countLabel) {
   document.getElementById(countId).textContent = `${sorted[0][key]} ${countLabel}${suffix}`;
 }
 
-function renderResults(results) {
-  const el = document.getElementById('results-content');
-  if (!results || results.length === 0) {
-    el.innerHTML = `
-      <div class="league-table-wrapper">
-        <div class="no-data-notice">No results yet.<br><br>
-          <a href="https://www.englandrugby.com/fixtures-and-results/search-results?team=10764&season=2025-2026" target="_blank" rel="noopener" style="color:var(--gold);font-family:'Oswald',sans-serif;letter-spacing:.08em;text-transform:uppercase;font-size:.8rem;">View on englandrugby.com ↗</a>
-        </div>
-      </div>`;
-    return;
-  }
-  const sorted = [...results].sort((a,b) => new Date(b.Date) - new Date(a.Date));
-  el.innerHTML = `<div class="results-list">${sorted.map(r => {
-    const isHome = (r.HomeAway || '').toUpperCase() === 'H';
-    const hs = Number(r.HomeScore), as_ = Number(r.AwayScore);
-    let cls = 'draw';
-    if (isHome && hs > as_) cls = 'win';
-    else if (!isHome && as_ > hs) cls = 'win';
-    else if (isHome && hs < as_) cls = 'loss';
-    else if (!isHome && as_ < hs) cls = 'loss';
-    return `
-      <div class="result-row ${cls}">
-        <div class="result-team home">${r.HomeTeam}</div>
-        <div class="result-score-block">
-          <div class="result-score">${r.HomeScore} – ${r.AwayScore}</div>
-          <div class="result-meta">${r.Date} · ${isHome ? 'Home' : 'Away'}</div>
-        </div>
-        <div class="result-team">${r.AwayTeam}</div>
-      </div>`;
-  }).join('')}</div>`;
-}
+// renderResults removed — league/results now link externally
 
-function renderTable(table) {
-  const el = document.getElementById('league-table-content');
-  if (!table || table.length === 0) {
-    el.innerHTML = `<div class="no-data-notice">
-      ⚠️ England Rugby blocks automated fetching. 
-      <br><a href="https://www.englandrugby.com/fixtures-and-results/search-results?competition=1596&season=2025-2026&division=68070#tables" target="_blank" rel="noopener" style="color:var(--gold)">View live table on englandrugby.com ↗</a>
-    </div>`;
-    return;
-  }
-  el.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th>
-          <th>PF</th><th>PA</th><th>PD</th><th>BP</th><th>Pts</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${table.map(r => {
-          const isUs = (r.Team || '').toLowerCase().includes('ickenham');
-          return `<tr${isUs ? ' class="highlight-row"' : ''}>
-            <td><span class="pos-num">${r.Pos}</span></td>
-            <td><span class="team-name">${r.Team}${isUs ? ' ⭐' : ''}</span></td>
-            <td>${r.P}</td><td class="result-W">${r.W}</td><td>${r.D}</td><td class="result-L">${r.L}</td>
-            <td>${r.PF}</td><td>${r.PA}</td><td>${r.PD}</td><td>${r.BP}</td>
-            <td class="pts-cell">${r.Pts}</td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table>`;
-}
+// renderTable removed — league/results now link externally
 
 function renderOverview(players) {
   function setCard(valueId, subId, sorted, key, label) {
@@ -1245,8 +1185,6 @@ function renderAll(players, results, table) {
   renderLeaderboard(players, 'DOTD',     'dotd-list',     'awards');
   renderAwardLeader(players, 'MOTM',     'motm-leader',   'motm-leader-count', 'awards');
   renderAwardLeader(players, 'DOTD',     'dotd-leader',   'dotd-leader-count', 'awards (all time)');
-  renderResults(results || []);
-  renderTable(table || []);
   initPlayerSearch(players);
 }
 
@@ -1299,12 +1237,15 @@ init();
 // ─── PLAYER SEARCH ────────────────────────────────────────────────
 let allPlayers = [];
 
+let searchListenerAttached = false;
 function initPlayerSearch(players) {
   allPlayers = players;
   const input = document.getElementById('player-search-input');
   const suggestions = document.getElementById('search-suggestions');
   const profile = document.getElementById('player-profile');
 
+  if (!searchListenerAttached) {
+    searchListenerAttached = true;
   input.addEventListener('input', () => {
     const q = input.value.trim().toLowerCase();
     if (!q) { suggestions.style.display = 'none'; profile.style.display = 'none'; return; }
@@ -1321,7 +1262,8 @@ function initPlayerSearch(players) {
         showPlayerProfile(el.dataset.name);
       });
     });
-  });
+  }); // end input listener
+  } // end if !searchListenerAttached
 
   document.addEventListener('click', e => {
     if (!e.target.closest('.search-input-row')) suggestions.style.display = 'none';
