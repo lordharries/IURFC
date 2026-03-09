@@ -589,19 +589,19 @@
   }
 
   .insta-badge {
-    width: 130px;
-    height: 130px;
+    width: 155px;
+    height: 155px;
     object-fit: contain;
     filter: drop-shadow(0 4px 14px rgba(0,0,0,0.3));
   }
 
   .insta-badge-fallback {
-    width: 130px;
-    height: 130px;
+    width: 155px;
+    height: 155px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 3.5rem;
+    font-size: 4rem;
   }
 
   .insta-club-name {
@@ -657,6 +657,18 @@
     text-align: center;
     padding: 8px 6px;
     flex: 1;
+    position: relative;
+  }
+
+  .insta-stat.is-top {
+    outline: 1px solid rgba(255,255,255,0.35);
+  }
+
+  .insta-stat-medal {
+    font-size: 0.75rem;
+    vertical-align: middle;
+    margin-left: 3px;
+    line-height: 1;
   }
 
   .insta-stat-value {
@@ -1240,18 +1252,28 @@ function showPlayerProfile(name) {
   const profile = document.getElementById('player-profile');
 
   const allStats = [
-    { label: 'Caps',  value: parseInt(p.Caps)  || 0 },
-    { label: 'Tries', value: parseInt(p.Tries) || 0 },
-    { label: 'MOTM',  value: parseInt(p.MOTM)  || 0 },
-    { label: 'DOTD',  value: parseInt(p.DOTD)  || 0 },
+    { label: 'Caps',  value: parseInt(p.Caps)  || 0, key: 'Caps'  },
+    { label: 'Tries', value: parseInt(p.Tries) || 0, key: 'Tries' },
+    { label: 'MOTM',  value: parseInt(p.MOTM)  || 0, key: 'MOTM'  },
+    { label: 'DOTD',  value: parseInt(p.DOTD)  || 0, key: 'DOTD'  },
   ];
   const stats = allStats.filter(s => s.value > 0);
 
-  const statBoxes = stats.map(s => `
-    <div class="insta-stat" id="istat-${s.label}">
-      <div class="insta-stat-value">${s.value}</div>
+  // Work out if this player leads each category
+  const leaders = {};
+  ['Caps','Tries','MOTM','DOTD'].forEach(key => {
+    const sorted = allPlayers.filter(x => Number(x[key]) > 0).sort((a,b) => Number(b[key]) - Number(a[key]));
+    leaders[key] = sorted.length > 0 ? sorted[0].Player : null;
+  });
+
+  const statBoxes = stats.map(s => {
+    const isTop = leaders[s.key] === p.Player;
+    return `
+    <div class="insta-stat${isTop ? ' is-top' : ''}" id="istat-${s.label}">
+      <div class="insta-stat-value">${s.value}${isTop ? '<span class="insta-stat-medal">🥇</span>' : ''}</div>
       <div class="insta-stat-label">${s.label}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   const badgeHtml = `<img class="insta-badge" id="insta-badge-img" src="${BADGE_SRC}" alt="Club Badge" crossorigin="anonymous" onerror="this.outerHTML='<div class=\\'insta-badge-fallback\\' id=\\'insta-badge-img\\'>🏉</div>'" />`;
 
