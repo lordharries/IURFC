@@ -1285,7 +1285,9 @@ function showPlayerProfile(name) {
   });
 
   // Player of the Month — expects POTM column in sheet (count of times awarded)
-  const potmCount = parseInt(p.POTM) || 0;
+  const potmRaw = p.POTM;
+  const potmCount = parseInt(potmRaw) || 0;
+  console.log('POTM debug:', p.Player, '| raw:', potmRaw, '| parsed:', potmCount, '| all keys:', Object.keys(p));
   const potmBadge = potmCount > 0 ? `
     <div class="insta-potm" id="ic-potm">
       🏅 <span>Player of the Month${potmCount > 1 ? ' ×' + potmCount : ''}</span>
